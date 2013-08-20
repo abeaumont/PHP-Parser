@@ -274,10 +274,17 @@ class #(-p)
                     $this->YYTRACE_REDUCE($yyn);
 #endif
                     try {
-                        $this->{'yyn' . $yyn}(
-                            $attributeStack[$this->stackPos - self::$yylen[$yyn]]
-                            + $endAttributes
-                        );
+                        $comments = array();
+                        for($i = 0; $i <= self::$yylen[$yyn]; $i++) {
+                            if (isset($attributeStack[$this->stackPos - $i]['comments'])) {
+                                $comments = array_merge($comments, $attributeStack[$this->stackPos - $i]['comments']);
+                            }
+                        }
+                        $attributes = array('startLine' => $attributeStack[$this->stackPos - self::$yylen[$yyn]]['startLine']) + $endAttributes;
+                        if (count($comments) > 0) {
+                            $attributes['comments'] = $comments;
+                        }
+                        $this->{'yyn' . $yyn}($attributes);
                     } catch (PHPParser_Error $e) {
                         if (-1 === $e->getRawLine()) {
                             $e->setRawLine($startAttributes['startLine']);
